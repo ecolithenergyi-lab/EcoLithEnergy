@@ -1,0 +1,42 @@
+{
+  "name": "ecolith-energy",
+  "version": "1.0.0",
+  "description": "EcoLith Energy - Lithium Battery Manufacturing Production Full-Stack Application",
+  "main": "server/src/server.js",
+  "scripts": {
+    "start": "node server/src/server.js",
+    "server": "node server/src/server.js",
+    "dev": "node --watch server/src/server.js",
+    "create-admin": "node server/src/scripts/createAdmin.js",
+    "seed": "node server/src/scripts/seed.js",
+    "test-security": "node server/src/scripts/testSecurity.js"
+  },
+  "keywords": [
+    "lithium-battery",
+    "ev-battery",
+    "ecolith-energy",
+    "express",
+    "mongodb",
+    "full-stack"
+  ],
+  "author": "EcoLith Energy",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "connect-mongo": "^5.1.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.2.0",
+    "google-auth-library": "^11.1.0",
+    "helmet": "^7.1.0",
+    "mongoose": "^8.3.4",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^9.2.0"
+  }
+}
