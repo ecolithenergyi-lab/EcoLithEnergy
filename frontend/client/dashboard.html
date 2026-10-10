@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer Dashboard | EcoLith Energy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/client/customer-auth.css" />
+  </head>
+  <body>
+    <div class="dashboard-layout">
+      <div class="topbar">
+        <h1 class="greeting">Hey Customer</h1>
+        <div>
+          <a href="/profile" class="btn secondary" style="margin-right: 10px;">Profile</a>
+          <button class="btn primary" id="logoutBtn" type="button">Logout</button>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>Profile</h3>
+          <p>Manage your account, personal details and address information.</p>
+        </div>
+        <div class="card">
+          <h3>My Inquiries</h3>
+          <p>View your battery requirements, support requests and follow-ups.</p>
+        </div>
+        <div class="card">
+          <h3>Wishlist</h3>
+          <p>Save products you want to revisit later and compare options.</p>
+        </div>
+        <div class="card">
+          <h3>Saved Products</h3>
+          <p>Track items that match your energy and mobility requirements.</p>
+        </div>
+        <div class="card">
+          <h3>Addresses</h3>
+          <p>Keep shipping and dealer contact addresses ready for future orders.</p>
+        </div>
+        <div class="card">
+          <h3>Settings</h3>
+          <p>Manage your password, preferences and account security.</p>
+        </div>
+      </div>
+    </div>
+
+    <script src="/client/customer-auth.js"></script>
+    <script src="/client/account-pages.js"></script>
+  </body>
+</html>

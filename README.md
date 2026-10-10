@@ -11,7 +11,7 @@ Preserves the real Delhi manufacturing facility photographs, authentic battery s
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript (Modern ES6+, Semantic & Accessible, Zero External Bloatware)
 - **Backend**: Node.js, Express.js (RESTful Architecture)
 - **Database**: MongoDB with Mongoose ODM (MongoDB Atlas in Production, Automated Embedded Fallback for Local Dev)
-- **Authentication**: Stateful Server-Side Sessions with `connect-mongo` session store and `bcryptjs` hashing (12 salt rounds)
+- **Authentication**: MongoDB-backed sessions, Passport.js Google OAuth, and `bcryptjs` password hashing (12 salt rounds)
 - **Security**:
   - Helmet HTTP Security Headers
   - CORS Allowlisting
@@ -28,61 +28,45 @@ Preserves the real Delhi manufacturing facility photographs, authentic battery s
 
 ```
 web/
-├── client/                     # Public customer website
-│   ├── index.html              # Public homepage with SEO & schema metadata
-│   ├── style.css               # EcoLith brand design system
-│   ├── script.js               # API-driven dynamic frontend logic
-│   └── images/                 # Real preserved photographs (factory & batteries)
-│       ├── factory-1.png       # Real battery assembly workstation
-│       ├── factory-2.png       # Real testing and production area
-│       ├── NMC-60V32AH.jpeg    # Real NMC 60V 32AH battery pack
-│       ├── 48-30 battry.jpeg   # Real 48V 30AH LFP battery pack
-│       ├── 60-30 lfp.jpeg      # Real 60V 30AH LFP battery pack
-│       └── quality.jpeg        # Real quality testing inspection
+├── frontend/
+│   ├── index.html              # Public homepage served at /
+│   ├── style.css               # Homepage styles
+│   ├── script.js               # Homepage interactions and API calls
+│   ├── images/                 # Homepage images
+│   ├── client/                 # Customer authentication, account pages and assets
+│   └── admin/                  # Staff admin panel
 │
-├── admin/                      # Secure Staff Admin Panel
-│   ├── index.html              # Admin SPA dashboard & login views
-│   ├── admin.css               # Dark theme with EcoLith green accents
-│   └── admin.js                # Admin CRUD operations, uploads & analytics
-│
-├── server/                     # Backend Node.js / Express
+├── backend/                    # Backend Node.js / Express
 │   ├── src/
 │   │   ├── app.js              # Express app configuration & middleware
 │   │   ├── server.js           # Server entry point & graceful shutdown
-│   │   ├── config/
-│   │   │   ├── env.js          # Environment variable parser
-│   │   │   └── database.js     # MongoDB connection with dev fallback
-│   │   ├── models/             # Mongoose Schemas
-│   │   │   ├── Admin.js        # Staff users & credentials
-│   │   │   ├── Product.js      # LFP & NMC battery catalog
-│   │   │   ├── Review.js       # Customer ratings & reviews
-│   │   │   ├── Inquiry.js      # Contact form submissions & CRM status
-│   │   │   ├── Gallery.js      # Factory workshop photographs
-│   │   │   ├── SiteSettings.js # Editable company info & phones
-│   │   │   └── AuditLog.js     # Admin security audit records
+│   │   ├── config/             # Environment and database configuration
+│   │   ├── models/             # Mongoose schemas
 │   │   ├── routes/             # Express API routes
 │   │   ├── controllers/        # Business logic controllers
 │   │   ├── middleware/         # Security, auth, CSRF, upload & error handlers
-│   │   ├── services/           # WhatsApp generator, upload management
-│   │   ├── utils/              # Structured logging, sanitization & responses
-│   │   ├── validators/         # Zod schemas for all endpoints
-│   │   └── scripts/
-│   │       ├── createAdmin.js  # CLI SuperAdmin generation script
-│   │       ├── seed.js         # Initial database seeding script
-│   │       └── testSecurity.js # Automated 20-point security test suite
-│   └── uploads/                # Directory for newly uploaded images
+│   │   ├── services/           # Upload and messaging services
+│   │   ├── utils/              # Logging, sanitization and response helpers
+│   │   ├── validators/         # Zod request schemas
+│   │   └── scripts/             # Admin, seed and security test commands
+│   └── uploads/                # Runtime uploads (not committed)
 │
-├── .env.example                # Environment variables template
-├── package.json                # Project dependencies & scripts
-└── README.md                   # Full documentation
+├── .env                        # Private root environment configuration
+├── package.json                # Root dependencies and scripts
+├── vercel.json                 # Root Vercel SPA routing configuration
+└── README.md                   # Project documentation
 ```
+
+The Express app serves the public homepage from `frontend/`, customer pages from
+`frontend/client/`, and the staff dashboard from `frontend/admin/`. Keep root
+configuration files, including `.env` and `package.json`, at the project root.
 
 ---
 
 ## 🚀 Step-by-Step Deployment & Setup Guide
 
 ### 1. Install Node.js
-Ensure Node.js (version 18.0.0 or higher) is installed:
+Ensure Node.js (version 20.0.0 or higher) is installed:
 ```bash
 node -v
 npm -v
@@ -110,20 +94,31 @@ cp .env.example .env
 ```
 Update configuration values in `.env`:
 - `MONGODB_URI`: Your MongoDB Atlas URI
-- `SESSION_SECRET`: A strong random 64-character secret
+- `SESSION_SECRET`: A unique random secret of at least 32 characters; the server refuses to start without it
 - `PORT`: Preferred port (e.g., 5000)
-- `CLIENT_URL`: URL of your site (e.g., `https://ecolithenergy.com`)
-- `DEFAULT_ADMIN_EMAIL`: Initial admin email
-- `DEFAULT_ADMIN_PASSWORD`: Initial admin password
+- `CLIENT_URL` and `FRONTEND_URL`: Exact public frontend origin(s), including scheme but no path (e.g., `https://ecolithenergy.com`). Both are allowed by the API's credentialed CORS policy. For local development with the frontend on port 3000, set both to `http://localhost:3000`.
+- `API_URL`: Public backend origin (used to construct the Google OAuth callback URL)
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: OAuth credentials from Google Cloud Console
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM`: SMTP settings used to deliver password-reset links
 
-### 5. Create First SuperAdmin
-Run the secure CLI command:
+The deployed frontend JavaScript sends API requests to `https://api.ecolithenergy.com`. Serve the frontend over HTTPS on the EcoLith domain (for example, `https://ecolithenergy.com`) so the API subdomain session cookie can be sent with credentialed requests. The API exposes its CSRF token in the `X-CSRF-Token` response header; keep the frontend origins above configured exactly to allow the browser to read it.
+
+### 5. Configure Google OAuth
+1. In Google Cloud Console, create or select a project and configure the OAuth consent screen.
+2. Create an OAuth 2.0 Client ID with application type **Web application**.
+3. Add the backend callback URL to **Authorized redirect URIs**:
+   - Local: `http://localhost:5000/api/auth/google/callback`
+   - Production: `https://api.ecolithenergy.com/api/auth/google/callback`
+4. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in the root `.env`, and set `API_URL` to the backend origin and `CLIENT_URL`/`FRONTEND_URL` to the frontend origin. Locally, use `API_URL=http://localhost:5000` and `CLIENT_URL=http://localhost:3000`; if `FRONTEND_URL` is omitted, it now falls back to `CLIENT_URL`.
+5. Restart the backend. The customer signup page then offers **Sign up with Google**. Google must return a verified email. The signup flow refuses to link an existing account; existing Google accounts can use **Continue with Google** on the login page.
+
+### 6. Create the First SuperAdmin
+The server does not create an administrator automatically. Configure explicit one-time bootstrap credentials in `.env` or enter them in the interactive prompt, then run:
 ```bash
 npm run create-admin
 ```
-Follow the interactive prompts or allow it to bootstrap using credentials defined in `.env`.
 
-### 6. Start the Server
+### 7. Start the Server
 - For local development with live reload:
   ```bash
   npm run dev
@@ -137,9 +132,10 @@ Once started:
 - **Staff Admin Dashboard**: `http://localhost:5000/admin`
 - **API Base**: `http://localhost:5000/api`
 
-### 7. Run Automated Security Test Suite
+### 8. Run Automated Tests
 Verify your installation against all 20 security tests:
 ```bash
+npm test
 npm run test-security
 ```
 
@@ -172,6 +168,10 @@ npm run test-security
    - Deep recursive sanitization of `req.body`, `req.query`, and `req.params`.
    - Removal of `$`-prefixed MongoDB operator keys.
    - HTML/script tag neutralization to prevent XSS.
+6. **Password Reset & Session Revocation**:
+   - Password-reset tokens are SHA-256 hashed in MongoDB and delivered by SMTP, never included in API responses.
+   - Password resets and password changes increment an authentication version, invalidating sessions issued before the change.
+   - Customer credentials are held in HttpOnly server-side session cookies rather than localStorage bearer tokens.
 
 ---
 
