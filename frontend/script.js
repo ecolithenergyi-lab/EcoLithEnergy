@@ -9,8 +9,6 @@
   const API_BASE_URL = ['localhost', '127.0.0.1'].includes(window.location.hostname)
     ? 'http://localhost:5000'
     : 'https://api.ecolithenergy.com';
-  let csrfToken = null;
-
   // Global cache for fetched dynamic products & settings
   let cachedProducts = [];
   let cachedSettings = null;
@@ -116,35 +114,8 @@
     mobileNavQuery.addEventListener('change', () => setMobileMenuOpen(false));
   }
 
-  function customerAuthHeaders() {
-    const headers = {};
-    if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
-    const csrfCookie = document.cookie
-      .split('; ')
-      .find((cookie) => cookie.startsWith('XSRF-TOKEN='));
-    if (!headers['X-CSRF-Token'] && csrfCookie) {
-      headers['X-CSRF-Token'] = decodeURIComponent(csrfCookie.slice('XSRF-TOKEN='.length));
-    }
-    return headers;
-  }
-
   async function apiFetch(endpoint, options = {}) {
-    const headers = new Headers(options.headers || {});
-    Object.entries(customerAuthHeaders()).forEach(([name, value]) => {
-      if (!headers.has(name)) headers.set(name, value);
-    });
-    const method = (options.method || 'GET').toUpperCase();
-    if (!['GET', 'HEAD', 'OPTIONS'].includes(method) && csrfToken && !headers.has('X-CSRF-Token')) {
-      headers.set('X-CSRF-Token', csrfToken);
-    }
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      credentials: 'include',
-      headers
-    });
-    csrfToken = response.headers.get('X-CSRF-Token') || csrfToken;
-    return response;
+    return fetch(`${API_BASE_URL}${endpoint}`, options);
   }
 
   function resolveMediaUrl(url) {
@@ -295,50 +266,6 @@
   }
 
   /* ============================================================
-     7A. DELAYED LOGIN / SIGNUP POPUP
-     ============================================================ */
-  const authPopup = document.getElementById('authPopup');
-  if (authPopup) {
-    const authPopupDelay = 5 * 1000;
-    const showAuthPopup = () => {
-      authPopup.classList.add('open');
-      authPopup.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
-      authPopup.querySelector('a[href="/login"]')?.focus();
-    };
-
-    authPopup.addEventListener('keydown', (event) => {
-      if (event.key !== 'Tab') return;
-      const links = authPopup.querySelectorAll('a[href="/login"], a[href="/signup"]');
-      const firstLink = links[0];
-      const lastLink = links[links.length - 1];
-
-      if (event.shiftKey && document.activeElement === firstLink) {
-        event.preventDefault();
-        lastLink.focus();
-      } else if (!event.shiftKey && document.activeElement === lastLink) {
-        event.preventDefault();
-        firstLink.focus();
-      }
-    });
-
-    window.addEventListener('load', () => {
-      window.setTimeout(() => {
-        apiFetch('/api/auth/me')
-          .then((response) => response.ok ? response.json() : null)
-          .then((payload) => {
-            if ((!payload?.success || !payload.data?.user) && !navMenu?.classList.contains('open')) {
-              showAuthPopup();
-            }
-          })
-          .catch(() => {
-            if (!navMenu?.classList.contains('open')) showAuthPopup();
-          });
-      }, authPopupDelay);
-    }, { once: true });
-  }
-
-  /* ============================================================
      8. DYNAMIC PRODUCTS LOADING & FILTERING
      ============================================================ */
   const productGrid = document.getElementById('productGrid');
@@ -423,85 +350,6 @@
   document.querySelectorAll('.view-product').forEach((btn) => {
     btn.addEventListener('click', () => openModal(btn.dataset.product));
   });
-
-  /* ============================================================
-     9. CUSTOMER NAVBAR STATE
-     ============================================================ */
-  const customerNavActions = document.getElementById('customerNavActions');
-  const mobileCustomerNav = document.getElementById('mobileCustomerNav');
-
-  function renderGuestNavigation() {
-    if (customerNavActions) {
-      customerNavActions.innerHTML = `
-        <a href="/login" class="btn btn-ghost btn-sm guest-link">Login</a>
-        <a href="/signup" class="btn btn-primary btn-sm guest-link">Sign Up</a>
-        <a href="https://wa.me/918595581248?text=Hello%20EcoLith%20Energy%2C%20I%20am%20interested%20in%20your%20lithium%20battery%20products." target="_blank" rel="noopener" class="btn btn-ghost btn-sm">WhatsApp</a>
-        <a href="tel:+918595581248" class="btn btn-primary btn-sm">Call Now</a>
-      `;
-    }
-    if (mobileCustomerNav) {
-      mobileCustomerNav.innerHTML = `
-        <a href="/login" class="nav-link">Login</a>
-        <a href="/signup" class="nav-link">Sign Up</a>
-      `;
-    }
-  }
-
-  function renderAuthenticatedNavigation() {
-    if (customerNavActions) {
-      customerNavActions.replaceChildren();
-      const logout = document.createElement('button');
-      logout.className = 'btn btn-primary btn-sm';
-      logout.type = 'button';
-      logout.id = 'customerLogoutBtn';
-      logout.textContent = 'Logout';
-      customerNavActions.append(logout);
-    }
-    if (mobileCustomerNav) {
-      mobileCustomerNav.replaceChildren();
-      const logout = document.createElement('button');
-      logout.className = 'nav-link';
-      logout.type = 'button';
-      logout.id = 'mobileCustomerLogoutBtn';
-      logout.textContent = 'Logout';
-      mobileCustomerNav.append(logout);
-    }
-
-    [
-      document.getElementById('customerLogoutBtn'),
-      document.getElementById('mobileCustomerLogoutBtn')
-    ].filter(Boolean).forEach((button) => {
-      button.addEventListener('click', async () => {
-        try {
-          await apiFetch('/api/auth/logout', {
-            method: 'POST',
-            headers: customerAuthHeaders()
-          });
-        } finally {
-          window.location.reload();
-        }
-      });
-    });
-  }
-
-  async function updateCustomerNavbar() {
-    if (!customerNavActions && !mobileCustomerNav) return;
-
-    try {
-      const res = await apiFetch('/api/auth/me');
-      const payload = await res.json();
-      if (!payload.success || !payload.data?.user) {
-        renderGuestNavigation();
-        return;
-      }
-
-      renderAuthenticatedNavigation();
-    } catch (error) {
-      renderGuestNavigation();
-    }
-  }
-
-  updateCustomerNavbar();
 
   /* ============================================================
      10. DYNAMIC CUSTOMER REVIEWS

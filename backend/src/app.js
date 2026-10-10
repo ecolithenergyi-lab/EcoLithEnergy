@@ -1,32 +1,20 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const session = require('express-session');
-const MongoStore = require('connect-mongo');
-const mongoose = require('mongoose');
 const morgan = require('morgan');
-const { passport } = require('./config/passport');
 const securityHeaders = require('./config/securityHeaders');
 
 const env = require('./config/env');
 const { apiLimiter } = require('./middleware/rateLimit');
-const { csrfProtection } = require('./middleware/csrf');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { sanitizeInput } = require('./utils/sanitize');
 
 // Import route modules
-const authRoutes = require('./routes/auth.routes');
 const productRoutes = require('./routes/product.routes');
 const reviewRoutes = require('./routes/review.routes');
 const inquiryRoutes = require('./routes/inquiry.routes');
 const galleryRoutes = require('./routes/gallery.routes');
 const settingsRoutes = require('./routes/settings.routes');
-const uploadRoutes = require('./routes/upload.routes');
-const adminRoutes = require('./routes/admin.routes');
-const customerAuthRoutes = require('./routes/customerAuth.routes');
-const customerProfileRoutes = require('./routes/customerProfile.routes');
-const orderRoutes = require('./routes/order.routes');
 
 function createCorsOptions() {
   const allowedOrigins = new Set(
@@ -58,10 +46,8 @@ function createCorsOptions() {
         callback(null, false);
       }
     },
-    credentials: true,
-    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-XSRF-Token'],
-    exposedHeaders: ['X-CSRF-Token']
+    methods: ['GET', 'HEAD', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type']
   };
 }
 
@@ -84,8 +70,6 @@ function createApp() {
   // Request Body Parsers & limits
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-  app.use(cookieParser());
-
   // Input sanitization against NoSQL injection & XSS
   app.use((req, res, next) => {
     if (req.body) req.body = sanitizeInput(req.body);
@@ -94,50 +78,17 @@ function createApp() {
     next();
   });
 
-  // Session configuration backed by MongoDB store
-  app.use(
-    session({
-      name: env.SESSION_NAME,
-      secret: env.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false,
-      store: MongoStore.create({
-        client: mongoose.connection.getClient(),
-        collectionName: 'sessions',
-        ttl: 24 * 60 * 60 // 1 day
-      }),
-      cookie: {
-        httpOnly: true,
-        secure: env.isProduction,
-        sameSite: 'lax',
-        maxAge: env.SESSION_MAX_AGE_MS
-      }
-    })
-  );
-
-  app.use(passport.initialize());
-  app.use(passport.session());
-
-  // CSRF Protection
-  app.use(csrfProtection);
-
   // Rate Limiting for API routes
   app.use('/api', apiLimiter);
 
-  // API Routes
-  app.use('/api/auth', customerAuthRoutes);
-  app.use('/api/profile', customerProfileRoutes);
-  app.use('/api/orders', orderRoutes);
-  app.use('/api/admin/auth', authRoutes);
+  // Public API Routes; account and staff-management APIs are disabled.
   app.use('/api/products', productRoutes);
   app.use('/api/reviews', reviewRoutes);
   app.use('/api/inquiries', inquiryRoutes);
   app.use('/api/gallery', galleryRoutes);
   app.use('/api/settings', settingsRoutes);
-  app.use('/api/admin/upload', uploadRoutes);
-  app.use('/api/admin', adminRoutes);
 
-  // Serve Uploaded Files
+  // Continue serving existing uploaded product media; upload management is disabled.
   app.use('/uploads', express.static(env.UPLOAD_DIR, { maxAge: '7d' }));
 
   // Serve Preserved Images
@@ -146,7 +97,7 @@ function createApp() {
   // Robots.txt & Sitemap.xml
   app.get('/robots.txt', (req, res) => {
     res.type('text/plain');
-    res.send(`User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nSitemap: ${env.CLIENT_URL}/sitemap.xml\n`);
+    res.send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${env.CLIENT_URL}/sitemap.xml\n`);
   });
 
   app.get('/sitemap.xml', (req, res) => {
@@ -161,40 +112,6 @@ function createApp() {
     <priority>1.0</priority>
   </url>
 </urlset>`);
-  });
-
-  // Admin Dashboard static files
-  app.use('/admin', express.static(path.resolve(__dirname, '../../frontend/admin')));
-  app.get('/admin/login', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../../frontend/admin/index.html'));
-  });
-  app.get('/admin/*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../../frontend/admin/index.html'));
-  });
-
-  // Customer auth & dashboard routes
-  app.get('/login', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../../frontend/client/login.html'));
-  });
-
-  app.get('/signup', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../../frontend/client/signup.html'));
-  });
-
-  app.get('/dashboard', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../../frontend/client/dashboard.html'));
-  });
-
-  app.get('/profile', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../../frontend/client/profile.html'));
-  });
-
-  app.get('/forgot-password', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../../frontend/client/forgot-password.html'));
-  });
-
-  app.get('/reset-password/:token', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../../frontend/client/reset-password.html'));
   });
 
   // Public Frontend static files

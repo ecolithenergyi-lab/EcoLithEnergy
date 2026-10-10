@@ -18,7 +18,7 @@ const logger = {
 
 function sanitizeMeta(meta) {
   const sanitized = { ...meta };
-  const sensitiveKeys = ['password', 'passwordHash', 'token', 'secret', 'SESSION_SECRET'];
+  const sensitiveKeys = ['password', 'passwordHash', 'token', 'secret'];
   for (const key of Object.keys(sanitized)) {
     if (sensitiveKeys.some(s => key.toLowerCase().includes(s))) {
       sanitized[key] = '[REDACTED]';

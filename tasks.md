@@ -1,81 +1,34 @@
 # EcoLith Energy Task Register
 
-## 1. Project status summary
+## Current status
 
-Current project posture: foundational implementation exists and the project has a working architecture baseline, but runtime validation and production-hardening tasks remain before final production readiness is claimed.
+The app is a public marketing/catalog website with a public inquiry API. Customer/staff authentication, accounts, admin panel, admin APIs, uploads management, and checkout/order routes have been removed.
 
-## 2. Active workstreams
+## Completed
 
-### 1. Documentation foundation
-- Status: Completed
-- Scope: Create and maintain the mandatory architecture, design, memory, PRD, rules, and task documents.
-- Notes: This document set is required to preserve institutional knowledge and system intent.
+- Removed login/signup popup and customer login/signup navigation.
+- Removed customer account, password recovery, and staff admin frontend pages.
+- Removed auth/admin backend route mounts and dedicated auth modules.
+- Removed session, OAuth, password-hashing, email-auth, and upload-only dependencies.
+- Removed the initial-admin bootstrap requirement and auth-only environment template variables.
+- Added tests for unavailable auth/admin paths.
+- Kept public catalog, inquiry, gallery, review, and settings routes.
+- Kept serving existing uploaded media paths for compatibility.
 
-### 2. Public website and branding
-- Status: Implemented
-- Scope: Homepage, global styling, contact layout, and EcoLith branding with industrial dark design system.
-- Notes: Real factory imagery is preserved as part of the public brand experience.
+## Follow-up validation
 
-### 3. Product catalog and public product access
-- Status: Implemented in codebase
-- Scope: Product model, public routes, catalog data, SEO metadata, and product publication controls.
-- Notes: Requires runtime verification to confirm data flow and UI integration.
+- Run `npm test`.
+- Run `npm run test-security`.
+- Start the local server and verify `/`, public catalog, and inquiry behavior.
+- Confirm Vercel deployment routes fall back to the public homepage after deployment.
+- Confirm MongoDB connectivity and production origin settings.
 
-### 4. Customer authentication and account flows
-- Status: Implemented in codebase
-- Scope: Signup, login, email verification, password reset, profile management, wishlist, cart, dealer application.
-- Notes: Requires validation of environment configuration and secure runtime behavior.
+## Deferred decisions
 
-### 5. Google OAuth integration
-- Status: Implemented in codebase
-- Scope: OAuth routes, account matching, verified-email checks, callback flow.
-- Notes: Requires valid Google project configuration and production URL settings.
+- Whether content management should be replaced by a separately protected workflow.
+- Whether legacy account/admin database collections should be archived or deleted. They are not used or deleted by the current application.
+- Whether new media-upload capability is needed; current upload management is disabled.
 
-### 6. Admin content workflow
-- Status: Implemented in codebase
-- Scope: Product management, gallery management, review management, settings management, inquiry handling.
-- Notes: Security and permission checks should be validated with runtime tests.
+## Completion rule
 
-### 7. Security and resilience
-- Status: Partially implemented and documented
-- Scope: CSRF, rate limiting, input sanitization, session handling, file validation, audit logging.
-- Notes: This remains a major area for runtime and security validation.
-
-### 8. Deployment readiness
-- Status: Pending validation
-- Scope: production environment, MongoDB Atlas connectivity, SMTP, OAuth, CORS and secure cookie configuration.
-- Notes: The project is not yet confirmed production-ready without runtime verification.
-
-## 3. Task backlog
-
-### High priority
-- Validate the runtime environment from `.env.example` against the actual `.env` configuration.
-- Confirm MongoDB connectivity and fallback behavior.
-- Create and verify the initial admin account using the admin bootstrap flow.
-- Validate all core customer auth flows in a live environment.
-- Verify product, inquiry, gallery, and settings APIs end-to-end.
-- Confirm the admin role and permission boundaries.
-
-### Medium priority
-- Test the upload validation pipeline with valid and invalid file inputs.
-- Confirm email verification and password reset behavior with SMTP configuration.
-- Validate the Google OAuth callback and redirect flow.
-- Review and correct any business flows not yet fully wired to the UI.
-
-### Lower priority
-- Improve product and gallery search/filtering.
-- Expand content and marketing sections as the business grows.
-- Evaluate future checkout or order management expansion.
-- Add more advanced reporting and analytics if required.
-
-## 4. Validation checklist
-
-A feature should be considered “done” only when:
-- the environment and dependencies are correctly configured
-- the route or UI flow is functionally tested
-- permission checks and validation rules are confirmed
-- the change remains consistent with the design and architecture rules
-
-## 5. Notes
-
-This task register should evolve with the project. New tasks should be added only when they are confirmed as necessary by implementation or validated business needs. Avoid adding speculative work items without clear justification.
+Mark a task done only after code changes and relevant behavior are tested. Do not claim production readiness based on local tests alone.

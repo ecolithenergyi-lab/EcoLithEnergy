@@ -2,254 +2,133 @@
 
 ## 1. Project identity
 
-- Project: EcoLith Energy
-- Business type: lithium battery manufacturing and sales
-- Headquarters / operating context: Delhi, India
-- Brand line: Powering a Greener Tomorrow
-- Public identity: EcoLith Energy / इकोलिथ एनर्जी
+EcoLith Energy / इकोलिथ एनर्जी is a Delhi-based lithium battery manufacturer. Brand tagline: “Powering a Greener Tomorrow.”
 
 ## 2. Business information
 
-- The website is meant to present EcoLith Energy as a real industrial battery manufacturing business.
-- The application supports public product discovery, contact leads, dealer interest, customer account management, and internal admin operations.
-- Real factory and battery imagery is treated as a core competitive and trust asset.
-- The business contact information referenced in the public website includes a Delhi manufacturing address and WhatsApp/contact details already present in the codebase.
+The site presents real EcoLith products, factory imagery, business contact details, and ways to submit a product inquiry. Company address and contact content are maintained in the site and public settings.
 
 ## 3. Confirmed requirements
 
-The following are confirmed project requirements based on the repository implementation and documentation:
-
-- Use HTML5, CSS3, and vanilla JavaScript for the frontend.
-- Use Node.js and Express for the backend.
-- Use MongoDB and Mongoose for persistence.
-- Support a public-facing marketing website and a separate admin area.
-- Support customer signup, login, email verification, password reset, profile management, and Google Sign-In.
-- Support product management, inquiry management, gallery management, reviews, and site settings.
-- Use server-side authentication and authorization rather than trusting client-side controls.
-- Enforce security measures such as rate limiting, CSRF protection, session security, and input sanitization.
-- Keep the visual system rooted in EcoLith green and industrial dark branding.
+- Public marketing/catalog site built with HTML, CSS, and vanilla JavaScript.
+- Node.js/Express API and MongoDB/Mongoose persistence.
+- Use authentic company and factory imagery.
+- Keep product inquiries available without requiring an account.
+- Login/signup, customer accounts, OAuth, and admin functionality have been permanently removed from the current application.
 
 ## 4. Technology stack
 
-- Frontend: HTML, CSS, vanilla JavaScript
+- Frontend: HTML5, CSS3, vanilla JavaScript
 - Backend: Node.js, Express
-- Database: MongoDB via Mongoose
-- Session layer: express-session with connect-mongo
-- Auth: Passport.js, Google OAuth 2.0, bcryptjs
-- Email: Nodemailer
-- Uploads: Multer with file validation
-- Security: Helmet, CORS, express-rate-limit, CSRF, sanitization utilities
-- Local dev fallback: mongodb-memory-server for in-memory MongoDB when configured database access is not available
+- Persistence: MongoDB/Mongoose
+- Request validation: Zod
+- Security and runtime: Helmet, CORS, rate limiting, input sanitization, centralized errors
+- Local database fallback: mongodb-memory-server (development only when configured)
 
 ## 5. Important architectural decisions
 
-- The application serves the public marketing site and the customer/admin interfaces from the same Node.js backend.
-- The frontend deliberately avoids React or Tailwind as part of the project rule set.
-- `frontend/` is designed as a light static site while `backend/` owns the application logic and data access.
-- API endpoints are mounted under `/api` and protected by middleware based on authentication or role requirements.
-- Session tokens are stored server-side in MongoDB and protected by secure cookie configuration.
-- Real facility photography is intentionally prioritized over generic stock imagery.
-- The app is designed to support both product discovery and operations management with a single, cohesive backend.
+- The app is public-only: no customer/staff authentication, sessions, or privileged application routes.
+- Admin and account endpoints are not mounted; their prior URLs fall through to the public homepage or return API 404s.
+- Existing MongoDB account/admin data is not deleted; removed code no longer reads it.
+- Public inquiries remain rate-limited and validated.
+- Existing image files under `backend/uploads/` remain readable for legacy product references, but new uploads are disabled.
 
 ## 6. Current project structure
 
-Important directories:
+- `frontend/` – public website and genuine images
+- `frontend/images/` – factory, battery, and logo assets
+- `backend/src/app.js` – Express app and public route mounting
+- `backend/src/config/` – environment, database, and HTTP headers
+- `backend/src/controllers/`, `models/`, `routes/`, `validators/` – public content API
+- `backend/src/middleware/` – public API security and validation
+- `backend/test/` – automated tests
 
-- `frontend/` – public site and UI shell
-- `frontend/client/` – customer auth and dashboard pages
-- `frontend/admin/` – admin UI shell
-- `backend/src/` – backend application code
-- `backend/src/config/` – environment and service configuration
-- `backend/src/routes/` – route registration
-- `backend/src/controllers/` – business logic
-- `backend/src/models/` – MongoDB schema models
-- `backend/src/middleware/` – security and access middleware
-- `backend/src/services/` – email and upload services
-- `backend/uploads/` – uploaded runtime assets
+Former `frontend/client` and `frontend/admin` pages and their auth assets have been removed.
 
-## 7. Implemented features
+## 7. Implemented public features
 
-The following are implemented in the current repository and should be treated as confirmed features only when validated by tests or runtime use:
+- EcoLith public homepage and responsive navigation
+- Public product catalog and detail modal
+- Public reviews, gallery, and settings APIs
+- Validated/rate-limited contact inquiry form
+- Phone and WhatsApp contact actions
+- Vercel static routing and Express static serving
 
-- Public marketing homepage with real EcoLith branding and factory imagery
-- Product catalog model and public product retrieval endpoints
-- Inquiry capture for website leads
-- Customer signup and login flows
-- Google OAuth signup/login flow
-- Email verification and password reset system
-- Customer cart and wishlist support
-- Customer profile support and account data persistence
-- Dealer application support on customer accounts
-- Admin authentication and staff role model
-- Product management for admin users
-- Gallery management for facility and battery images
-- Review management for user feedback
-- Site settings management
-- Audit logging for admin actions
-- CSRF, rate limiting, upload validation, and request sanitization
-- MongoDB fallback for local development when no configured database is available
+## 8. Removed/disabled features
 
-## 8. Features still pending
+- Customer login/signup, Google OAuth, email verification, password recovery
+- Customer profile, wishlist, cart, dealer application, and account dashboard
+- Staff/admin login, dashboard, CRUD APIs, staff management, audit UI, and upload management
+- Checkout/order endpoints
 
-These are not yet guaranteed to be complete or fully tested unless the code is validated through runtime checks or automated tests:
+Do not describe these as available. Reintroduction requires an explicit product decision and a secure server-side design.
 
-- Production-style deployment hardening beyond the existing local setup
-- Full public checkout or payment flow beyond a cart-oriented pattern
-- Full end-to-end validation for every admin workflow
-- Completeness of all UI pages beyond the current static templates and API skeleton
-- Automated test coverage beyond the security script and Node test harness
+## 9. Current database models
 
-## 9. Database models and relationships
+`Product`, `Inquiry`, `Review`, `Gallery`, `SiteSettings`, and `AuditLog`. The old account/admin/order collections may remain in MongoDB but their model code was removed; their documents were not deleted.
 
-Core models in use:
+## 10. Public API endpoints
 
-- `User` – customer, dealer, and account record
-- `Admin` – staff account and role records
-- `Product` – catalog data for battery products
-- `Inquiry` – lead and contact form data
-- `Review` – review records for the public site
-- `Gallery` – facility and battery imagery
-- `SiteSettings` – dynamic branding and contact configuration
-- `Order` – order lifecycle metadata
-- `AuditLog` – admin action logging
+- `GET /api/products`
+- `GET /api/products/:slug`
+- `GET /api/reviews`
+- `POST /api/inquiries`
+- `/api/gallery` public retrieval
+- `/api/settings/public` public settings
 
-Important relationships and patterns:
-- `User` stores cart and wishlist data directly on the account record
-- `User` documents can include dealer application data such as shop name, GST, and address
-- Product records are referenced by `productId` in customer cart data
-- `Inquiry` is a lead collection model with status tracking
-- `Gallery` and `Product` both support published / unpublished state flags
-
-## 10. API endpoints
-
-Public and operational routes are mounted under `/api`:
-
-- `/api/auth/*` – login, signup, Google auth, password recovery, logout, wishlist, cart, dealer application
-- `/api/products` – public product catalog and product detail access
-- `/api/reviews` – public reviews endpoint
-- `/api/inquiries` – website inquiry endpoints
-- `/api/gallery` – gallery data access
-- `/api/settings` – settings data access
-- `/api/admin/*` – staff-only management APIs
-- `/api/admin/upload` – upload management for protected image assets
+Removed auth/admin/profile/orders/upload-management paths are not mounted.
 
 ## 11. Authentication configuration status
 
-Confirmed status:
+Authentication is removed from the app. `.env.example` no longer requests session, OAuth, SMTP, or admin-bootstrap credentials. The existing private `.env` was not changed.
 
-- Customer local auth is implemented using `bcryptjs` and MongoDB-backed sessions.
-- Google OAuth is implemented and guarded by environment-based configuration.
-- Admin auth is implemented with role-based middleware.
-- Protected admin routes require server-side authentication.
-- Session security is configured with secure cookies and CSRF protection.
+## 12. Environment variables
 
-The exact live status of any specific environment depends on the values set in the local or deployed `.env` file.
+See `.env.example`: `NODE_ENV`, `PORT`, `MONGODB_URI`, `USE_MEMORY_DB_FALLBACK`, `IP_HASH_SALT` (optional), `CLIENT_URL`, `FRONTEND_URL`, `API_URL`.
 
-## 12. Environment variables required
+Never record secret values in this file.
 
-The runtime depends on the following environment variables defined in `.env` or `.env.example`:
+## 13. Known limitations
 
-- `PORT`
-- `MONGODB_URI`
-- `USE_MEMORY_DB_FALLBACK`
-- `SESSION_SECRET`
-- `SESSION_NAME`
-- `SESSION_MAX_AGE_MS`
-- `CLIENT_URL`
-- `FRONTEND_URL`
-- `API_URL`
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-- `DEFAULT_ADMIN_NAME`
-- `DEFAULT_ADMIN_EMAIL`
-- `DEFAULT_ADMIN_PASSWORD`
-- `SMTP_HOST`
-- `SMTP_PORT`
-- `SMTP_SECURE`
-- `SMTP_USER`
-- `SMTP_PASSWORD`
-- `SMTP_FROM`
+- No in-app content/admin management UI is available.
+- New media upload management is unavailable; existing `/uploads` media remains readable.
+- Cart, dealer workflows, accounts, and checkout are not available.
+- Deployment readiness still depends on verifying the database and deployed origins.
 
-No secret values should be stored in this file.
+## 14. Last completed milestone
 
-## 13. Known bugs and limitations
-
-This section should be updated as issues are confirmed.
-
-Known/likely limitations identified from the current codebase:
-
-- The project is highly dependent on correct environment configuration for live operation.
-- Some UI flows are statically served and may require integration verification in browser runtime tests.
-- Product, gallery, and settings features need runtime validation to confirm they are fully wired to all UI pages.
-- Deployment behavior depends on exact origin configuration for CORS and OAuth callbacks.
-
-## 14. Last completed development milestone
-
-The current project state reflects a completed foundational implementation of:
-
-- public site structure and branding
-- backend API skeleton and route separation
-- MongoDB models and security middleware
-- customer and admin auth foundations
-- product, gallery, review, and inquiry domains
-- upload and email support for real-world operational flows
-
-This milestone is considered a strong functional foundation, but it must still be validated against runtime and integration checks before claiming full production readiness.
+Removed the public login popup and all customer/staff login surfaces, auth routes, and related runtime dependencies. Kept the public marketing, catalog, and inquiry paths.
 
 ## 15. Next recommended actions
 
-1. Validate the current environment setup against `.env.example` and confirm all required values are present.
-2. Run the project startup and test scripts to verify that the app boots successfully.
-3. Confirm the admin bootstrap flow and create a valid initial admin account when needed.
-4. Validate product, gallery, inquiry, and customer auth endpoints with live API testing.
-5. Audit the admin dashboard and customer pages against the actual backend data flows.
-6. Expand automated coverage for critical business flows once the current foundation is considered stable.
+1. Run the focused auth-disabled and project test suites.
+2. Verify local homepage and public APIs.
+3. Confirm Vercel deployment behavior after deployment.
+4. Decide separately whether content management needs a replacement workflow.
 
 ## 16. Important file paths
 
-- `README.md` – project overview and deployment notes
-- `.env.example` – environment variable template
-- `backend/src/app.js` – Express app configuration
-- `backend/src/config/env.js` – environment configuration
-- `backend/src/config/passport.js` – Google OAuth setup
-- `backend/src/models/` – Mongoose domain models
-- `backend/src/routes/` – route configuration
-- `backend/src/middleware/` – auth and security middleware
-- `frontend/index.html` – public home page
-- `frontend/client/` – customer flows
-- `frontend/admin/` – admin dashboard
+- `README.md`
+- `Architecture.md`
+- `design.md`
+- `prd.md`
+- `rules.md`
+- `tasks.md`
+- `.env.example`
+- `frontend/index.html`
+- `frontend/script.js`
+- `backend/src/app.js`
+- `backend/src/server.js`
+- `backend/test/auth-disabled.test.js`
 
 ## 17. Testing status
 
-The repository includes scripts for:
-
-- `npm test`
-- `npm run test-security`
-
-The system is expected to support automated verification of security and application behavior. However, the current memory status should be treated as "partial validation" until those commands are run in the actual environment and pass.
+The repository test suite includes checks that removed auth/admin endpoints remain unavailable. Results must be refreshed by running tests after changes; no unrun command should be reported as passing.
 
 ## 18. Deployment status
 
-Current status: foundation is implemented and ready for environment verification, but not yet confirmed production-ready.
+Vercel serves `frontend/` as static output. The Express server serves the same public site and API. Production status is unverified until deployed settings and database connectivity are tested.
 
-Requirements for deployment readiness:
+## Ongoing memory rule
 
-- secure `.env` values configured
-- MongoDB connection validated
-- Google OAuth credentials verified
-- SMTP credentials verified
-- production CORS and callback origins confirmed
-- admin bootstrap completed
-- application tested in the target runtime environment
-
-## 19. Working rules for the project
-
-- Record only verified facts here.
-- Do not claim a feature works unless it has been tested.
-- State whether a feature is implemented, partially implemented, blocked, or pending.
-- Keep secret values out of this file and use environment variable names instead.
-- Update this file at the end of meaningful development sessions.
-
-## 20. Last updated
-
-This file should be refreshed after each meaningful implementation or debugging session to reflect the actual state of the codebase.
+Record only verified facts. Distinguish implemented behavior from pending validation. Never store passwords, API secrets, database credentials, access tokens, or private keys in this document.

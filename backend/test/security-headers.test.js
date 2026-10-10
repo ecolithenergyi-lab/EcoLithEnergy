@@ -50,7 +50,7 @@ test('CORS allows configured frontend origins and rejects unrelated origins', as
     headers: { Origin: env.CLIENT_URL }
   });
   assert.equal(configuredFrontend.headers.get('access-control-allow-origin'), env.CLIENT_URL);
-  assert.equal(configuredFrontend.headers.get('access-control-allow-credentials'), 'true');
+  assert.equal(configuredFrontend.headers.get('access-control-allow-credentials'), null);
 
   const allowed = await fetch(`${baseUrl}/api/unknown`, {
     headers: { Origin: 'http://localhost:5000' }
@@ -59,7 +59,7 @@ test('CORS allows configured frontend origins and rejects unrelated origins', as
     assert.equal(allowed.headers.get('access-control-allow-origin'), null);
   } else {
     assert.equal(allowed.headers.get('access-control-allow-origin'), 'http://localhost:5000');
-    assert.equal(allowed.headers.get('access-control-allow-credentials'), 'true');
+    assert.equal(allowed.headers.get('access-control-allow-credentials'), null);
   }
 
   const denied = await fetch(`${baseUrl}/api/unknown`, {

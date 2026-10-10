@@ -33,34 +33,6 @@
   ],
   "rewrites": [
     {
-      "source": "/admin",
-      "destination": "/admin/index.html"
-    },
-    {
-      "source": "/login",
-      "destination": "/client/login.html"
-    },
-    {
-      "source": "/signup",
-      "destination": "/client/signup.html"
-    },
-    {
-      "source": "/dashboard",
-      "destination": "/client/dashboard.html"
-    },
-    {
-      "source": "/profile",
-      "destination": "/client/profile.html"
-    },
-    {
-      "source": "/forgot-password",
-      "destination": "/client/forgot-password.html"
-    },
-    {
-      "source": "/reset-password/(.*)",
-      "destination": "/client/reset-password.html"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

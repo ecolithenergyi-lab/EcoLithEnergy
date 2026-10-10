@@ -39,7 +39,10 @@ function sanitizeInput(obj) {
  */
 function hashIp(ip) {
   if (!ip) return '0.0.0.0';
-  return crypto.createHash('sha256').update(ip + (process.env.SESSION_SECRET || 'salt')).digest('hex').substring(0, 16);
+  return crypto.createHash('sha256')
+    .update(ip + (process.env.IP_HASH_SALT || 'ecolith-public-inquiry'))
+    .digest('hex')
+    .substring(0, 16);
 }
 
 module.exports = {
