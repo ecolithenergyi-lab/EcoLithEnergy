@@ -108,36 +108,58 @@ async function seedDatabase() {
       logger.info('Initial real EcoLith products seeded successfully.');
     }
 
-    // 3. Seed Reviews
-    const reviewCount = await Review.countDocuments();
-    if (reviewCount === 0) {
-      const initialReviews = [
-        {
-          name: 'Sahil Gunjan',
-          rating: 5,
-          review: 'Best battery premium and best performance quality 👍',
-          source: 'Google Business Profile',
-          isPublished: true
-        },
-        {
-          name: 'Salim Ahamad',
-          rating: 5,
-          review: 'Very nice 👍',
-          source: 'Google Business Profile',
-          isPublished: true
-        },
-        {
-          name: 'EcoLith Energy',
-          rating: 5,
-          review: 'Best service and premium quality battery',
-          source: 'Google Business Profile',
-          isPublished: true
-        }
-      ];
+    // 3. Seed customer reviews
+    const initialReviews = [
+      {
+        name: 'Sahil Gunjan (Gunjan)',
+        rating: 5,
+        review: 'Best battery premium and best performance quality 👍',
+        source: 'Google Business Profile',
+        isPublished: true
+      },
+      {
+        name: 'Salim Ahamad',
+        rating: 5,
+        review: 'Very nice 👍',
+        source: 'Google Business Profile',
+        isPublished: true
+      },
+      {
+        name: 'Ilma Khan',
+        rating: 5,
+        review: 'Good battery quality and produced service👍🏻',
+        source: 'Google Business Profile',
+        isPublished: true
+      },
+      {
+        name: 'Khushboo Kashyap',
+        rating: 5,
+        review: 'Good quality and best performance for Ev scoot🤗',
+        source: 'Google Business Profile',
+        isPublished: true
+      },
+      {
+        name: 'Sonam Jha',
+        rating: 5,
+        review: 'Nice work with affordable price and good service,👍🎉',
+        source: 'Google Business Profile',
+        isPublished: true
+      }
+    ];
 
-      await Review.insertMany(initialReviews);
-      logger.info('Initial customer reviews seeded successfully.');
-    }
+    await Review.bulkWrite(initialReviews.map((review) => ({
+      updateOne: {
+        filter: { source: review.source, review: review.review },
+        update: { $set: review },
+        upsert: true
+      }
+    })));
+    await Review.deleteOne({
+      name: 'EcoLith Energy',
+      source: 'Google Business Profile',
+      review: 'Best service and premium quality battery'
+    });
+    logger.info('Customer reviews seeded successfully.');
 
     // 4. Seed Gallery
     const galleryCount = await Gallery.countDocuments();
@@ -175,6 +197,7 @@ async function seedDatabase() {
 
   } catch (err) {
     logger.error(`Database seeding failed: ${err.message}`);
+    throw err;
   }
 }
 
@@ -182,15 +205,23 @@ async function seedDatabase() {
 if (require.main === module) {
   const { connectDatabase, closeDatabase } = require('../config/database');
   (async () => {
+    let exitCode = 0;
+
     try {
       await connectDatabase();
       await seedDatabase();
       logger.info('Seed script execution completed.');
-      await closeDatabase();
-      process.exit(0);
     } catch (err) {
-      console.error(err);
-      process.exit(1);
+      logger.error(`Seed script execution failed: ${err.message}`, { stack: err.stack });
+      exitCode = 1;
+    } finally {
+      try {
+        await closeDatabase();
+      } catch (err) {
+        logger.error(`Failed to close database after seeding: ${err.message}`, { stack: err.stack });
+        exitCode = 1;
+      }
+      process.exitCode = exitCode;
     }
   })();
 }
