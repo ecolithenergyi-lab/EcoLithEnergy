@@ -215,6 +215,14 @@
   const modalTitle = document.getElementById('modalTitle');
   const modalBody  = document.getElementById('modalBody');
 
+  function formatProductText(text, isNmc) {
+    if (!isNmc || typeof text !== 'string') return text;
+    return text.replace(
+      /\bNMC(?:\s*\(\s*Nickel Manganese Cobalt\s*\))?(?:\s+Lithium[-\s]?Ion)?/gi,
+      'NMC (Nickel Manganese Cobalt)'
+    );
+  }
+
   function openModal(productIdentifier) {
     // Find matching product in cachedProducts
     let product = cachedProducts.find(
@@ -222,21 +230,28 @@
     );
 
     if (!product) {
+      const isNmcProduct = /\bNMC\b/i.test(productIdentifier);
       product = {
         name: productIdentifier,
-        description: 'Dependable lithium battery solution engineered for electric mobility and energy applications.',
-        features: ['Quality Tested', 'Real Manufacturing in Delhi', 'Thermal Stability']
+        category: isNmcProduct ? 'NMC' : undefined,
+        description: isNmcProduct
+          ? 'NMC (Nickel Manganese Cobalt) battery engineered for electric mobility applications.'
+          : 'Dependable lithium battery solution engineered for electric mobility and energy applications.',
+        features: isNmcProduct
+          ? ['NMC (Nickel Manganese Cobalt) technology', 'Quality Tested', 'Thermal Stability']
+          : ['Quality Tested', 'Real Manufacturing in Delhi', 'Thermal Stability']
       };
     }
 
+    const isNmcProduct = product.category === 'NMC' || /\bNMC\b/i.test(product.name);
     if (modalTitle) modalTitle.textContent = product.name;
     if (modalBody) {
       const specsHtml = (product.features && product.features.length)
-        ? `<ul>${product.features.map((f) => `<li>${escapeHtml(f)}</li>`).join('')}</ul>`
+        ? `<ul>${product.features.map((f) => `<li>${escapeHtml(formatProductText(f, isNmcProduct))}</li>`).join('')}</ul>`
         : '';
 
       modalBody.innerHTML = `
-        <p>${escapeHtml(product.description)}</p>
+        <p>${escapeHtml(formatProductText(product.description, isNmcProduct))}</p>
         ${specsHtml}
       `;
     }
@@ -294,6 +309,13 @@
       const whatsappNumber = (cachedSettings && cachedSettings.whatsappNumber) || '8595581248';
       const waText = encodeURIComponent(`Hello EcoLith Energy, I want to enquire about the ${prod.name}.`);
       const waUrl = `https://wa.me/91${whatsappNumber}?text=${waText}`;
+      const technology = catLower === 'nmc'
+        ? 'NMC (Nickel Manganese Cobalt)'
+        : prod.technology;
+      const productDescription = formatProductText(
+        prod.shortDescription || prod.description,
+        catLower === 'nmc'
+      );
 
       return `
         <article class="product-card reveal visible" data-category="${catLower}">
@@ -303,12 +325,12 @@
           </div>
           <div class="product-body">
             <h3>${escapeHtml(prod.name)}</h3>
-            <p class="product-lead">${escapeHtml(prod.shortDescription || prod.description)}</p>
+            <p class="product-lead">${escapeHtml(productDescription)}</p>
             <ul class="spec-list">
               <li><span>Voltage</span><b>${escapeHtml(prod.voltage)}</b></li>
               <li><span>Capacity</span><b>${escapeHtml(prod.capacity)}</b></li>
               ${prod.energy ? `<li><span>Energy</span><b>${escapeHtml(prod.energy)}</b></li>` : ''}
-              <li><span>Technology</span><b>${escapeHtml(prod.technology)}</b></li>
+              <li><span>Technology</span><b>${escapeHtml(technology)}</b></li>
               <li><span>Type</span><b>${escapeHtml(prod.type || 'Light Weight Battery')}</b></li>
             </ul>
             <div class="product-cta">
@@ -472,17 +494,18 @@
     if (floatWa) floatWa.href = waUrl;
 
     // Google Maps Iframe & Directions
-    const addressQuery = encodeURIComponent(s.address || 'Ground Floor, Khasra Number 15, 24, Gali No. 5, near Shani Mandir, Samaipur, Swaroop Nagar Extension, Delhi, 110042');
+    const mapEmbedFallback = 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d6996.084981284856!2d77.151446!3d28.7481483!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d0100077bbe8b%3A0x3954dbfbfff2071a!2sEcoLith%20Energy!5e0!3m2!1sen!2sin!4v1791801467083!5m2!1sen!2sin';
+    const directionsFallback = 'https://www.google.com/maps/dir/?api=1&destination=28.7481483%2C77.151446';
     const mapsUrl = (url, fallback) => url && !url.includes('Samaipur+Swaroop+Nagar+Extension+Delhi+110042')
       ? url
       : fallback;
     const iframe = document.getElementById('mapIframe');
     if (iframe) {
-      iframe.src = mapsUrl(s.googleMapsEmbed, `https://www.google.com/maps?q=${addressQuery}&output=embed`);
+      iframe.src = mapsUrl(s.googleMapsEmbed, mapEmbedFallback);
     }
     const dirLink = document.getElementById('mapDirectionsLink');
     if (dirLink) {
-      dirLink.href = mapsUrl(s.googleMapsUrl, `https://www.google.com/maps/search/?api=1&query=${addressQuery}`);
+      dirLink.href = mapsUrl(s.googleMapsUrl, directionsFallback);
     }
   }
 

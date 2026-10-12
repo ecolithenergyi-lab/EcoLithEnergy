@@ -35,12 +35,12 @@ const SiteSettingsSchema = new mongoose.Schema(
     },
     googleMapsUrl: {
       type: String,
-      default: 'https://www.google.com/maps/search/?api=1&query=Ground+Floor,+Khasra+Number+15,+24,+Gali+No.+5,+near+Shani+Mandir,+Samaipur,+Swaroop+Nagar+Extension,+Delhi,+110042',
+      default: 'https://www.google.com/maps/dir/?api=1&destination=28.7481483%2C77.151446',
       trim: true
     },
     googleMapsEmbed: {
       type: String,
-      default: 'https://www.google.com/maps?q=Ground+Floor,+Khasra+Number+15,+24,+Gali+No.+5,+near+Shani+Mandir,+Samaipur,+Swaroop+Nagar+Extension,+Delhi,+110042&output=embed',
+      default: 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d6996.084981284856!2d77.151446!3d28.7481483!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d0100077bbe8b%3A0x3954dbfbfff2071a!2sEcoLith%20Energy!5e0!3m2!1sen!2sin!4v1791801467083!5m2!1sen!2sin',
       trim: true
     },
     whatsappNumber: {
