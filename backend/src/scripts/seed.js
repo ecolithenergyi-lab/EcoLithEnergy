@@ -184,7 +184,7 @@ async function seedDatabase() {
         {
           title: 'Quality & Testing',
           description: 'Inspection and testing of assembled battery packs.',
-          image: '/images/quality.jpeg',
+          image: '/images/quality-testing-blueprint.jpeg',
           category: 'quality',
           sortOrder: 3,
           isPublished: true

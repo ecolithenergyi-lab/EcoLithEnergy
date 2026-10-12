@@ -92,7 +92,10 @@ function createApp() {
   app.use('/uploads', express.static(env.UPLOAD_DIR, { maxAge: '7d' }));
 
   // Serve Preserved Images
-  app.use('/images', express.static(path.resolve(__dirname, '../../frontend/images'), { maxAge: '7d' }));
+  app.get('/images/quality.jpeg', (req, res) => {
+    res.redirect(308, '/images/quality-testing-blueprint.jpeg');
+  });
+  app.use('/images', express.static(path.resolve(__dirname, '../../frontend/client/images'), { maxAge: '7d' }));
 
   // Robots.txt & Sitemap.xml
   app.get('/robots.txt', (req, res) => {

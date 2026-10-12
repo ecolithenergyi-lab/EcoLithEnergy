@@ -121,6 +121,8 @@
   function resolveMediaUrl(url) {
     if (!url) return '';
     if (url.startsWith('/uploads/')) return `${API_BASE_URL}${url}`;
+    if (url === '/images/quality.jpeg') return '/client/images/quality-testing-blueprint.jpeg';
+    if (url.startsWith('/images/')) return `/client${url}`;
     return url;
   }
 
@@ -423,9 +425,19 @@
 
   function renderGallery(items) {
     if (!facilityGallery) return;
-    facilityGallery.innerHTML = items.map((item) => `
-      <figure class="facility-item reveal visible">
-        <img src="${escapeHtml(resolveMediaUrl(item.image))}" alt="${escapeHtml(item.title)} at EcoLith Energy" loading="lazy" />
+    const blueprintImage = '/client/images/quality-testing-blueprint.jpeg';
+    const galleryItems = items.filter((item) => (
+      item.image !== '/images/quality.jpeg' &&
+      resolveMediaUrl(item.image) !== blueprintImage
+    ));
+    galleryItems.push({
+      title: 'Quality & Testing',
+      image: blueprintImage,
+      isBlueprint: true
+    });
+    facilityGallery.innerHTML = galleryItems.map((item) => `
+      <figure class="facility-item${item.isBlueprint ? ' facility-item-blueprint' : ''} reveal visible">
+        <img${item.isBlueprint ? ' class="facility-blueprint"' : ''} src="${escapeHtml(resolveMediaUrl(item.image))}" alt="${escapeHtml(item.isBlueprint ? 'Battery pack assembly blueprint for quality and testing' : `${item.title} at EcoLith Energy`)}" loading="lazy" />
         <figcaption>${escapeHtml(item.title)}</figcaption>
       </figure>
     `).join('');
@@ -507,6 +519,10 @@
     if (dirLink) {
       dirLink.href = mapsUrl(s.googleMapsUrl, directionsFallback);
     }
+
+    if (cachedProducts.length) {
+      renderProducts(cachedProducts);
+    }
   }
 
   /* ============================================================
@@ -565,6 +581,7 @@
 
       const submitBtn = form.querySelector('button[type="submit"]');
       const originalBtnText = submitBtn ? submitBtn.textContent : 'Send Enquiry';
+      const whatsappWindow = window.open('about:blank', '_blank');
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Submitting...';
@@ -586,15 +603,18 @@
           form.reset();
 
           // Optionally open WhatsApp with prefilled message
-          if (json.data && json.data.whatsappUrl) {
-            setTimeout(() => {
-              window.open(json.data.whatsappUrl, '_blank', 'noopener');
-            }, 800);
+          if (whatsappWindow && !whatsappWindow.closed && json.data && json.data.whatsappUrl) {
+            whatsappWindow.location.href = json.data.whatsappUrl;
+            whatsappWindow.opener = null;
+          } else if (whatsappWindow && !whatsappWindow.closed) {
+            whatsappWindow.close();
           }
         } else {
+          if (whatsappWindow && !whatsappWindow.closed) whatsappWindow.close();
           showToast(json.message || 'Failed to submit enquiry. Please try again.', true);
         }
       } catch (err) {
+        if (whatsappWindow && !whatsappWindow.closed) whatsappWindow.close();
         showToast('Network error. You can also reach us directly on WhatsApp.', true);
       } finally {
         if (submitBtn) {

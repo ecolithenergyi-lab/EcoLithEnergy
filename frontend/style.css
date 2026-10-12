@@ -157,7 +157,7 @@ h1,h2,h3,h4,h5{
   background:transparent;color:var(--black);
   border-radius:0;
 }
-.brand-logo{width:42px;height:42px;object-fit:contain;display:block;filter:drop-shadow(0 0 8px rgba(139,212,0,.2))}
+.brand-logo{width:42px;height:42px;object-fit:contain;display:block;color:var(--green);filter:drop-shadow(0 0 8px rgba(139,212,0,.2))}
 .brand-text b{color:var(--green);font-weight:800}
 
 .nav-menu{justify-self:center}
@@ -296,6 +296,11 @@ h1,h2,h3,h4,h5{
 .facility-item img{
   width:100%;aspect-ratio:16/9;object-fit:cover;
   transition:transform .8s var(--ease);
+}
+.facility-item-blueprint{width:min(100%,760px);margin-inline:auto}
+.facility-item img.facility-blueprint{
+  height:min(82vh,820px);aspect-ratio:auto;
+  object-fit:contain;background:#0b2137;
 }
 .facility-item:hover img{transform:scale(1.04)}
 .facility-item figcaption{
@@ -478,6 +483,10 @@ h1,h2,h3,h4,h5{
 .quality{background:var(--dark)}
 .quality-media{border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md)}
 .quality-media img{aspect-ratio:4/3;object-fit:cover}
+.quality-media img.quality-blueprint{
+  width:100%;height:min(82vh,820px);aspect-ratio:auto;
+  object-fit:contain;background:#0b2137;
+}
 .quality-list{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-top:1.5rem}
 .quality-list li{
   display:flex;align-items:center;gap:.8rem;
