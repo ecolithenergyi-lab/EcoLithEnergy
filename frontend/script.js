@@ -507,7 +507,7 @@
 
     // Google Maps Iframe & Directions
     const mapEmbedFallback = 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d6996.084981284856!2d77.151446!3d28.7481483!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d0100077bbe8b%3A0x3954dbfbfff2071a!2sEcoLith%20Energy!5e0!3m2!1sen!2sin!4v1791801467083!5m2!1sen!2sin';
-    const directionsFallback = 'https://www.google.com/maps/dir/?api=1&destination=28.7481483%2C77.151446';
+    const directionsUrl = 'https://www.google.com/maps/dir/?api=1&destination=EcoLith%20Energy%2C%20Ground%20Floor%2C%20Khasra%20Number%2015%2C%2024%2C%20Gali%20No.%205%2C%20near%20Shani%20Mandir%2C%20Samaipur%2C%20Swaroop%20Nagar%20Extension%2C%20Delhi%2C%20110042';
     const mapsUrl = (url, fallback) => url && !url.includes('Samaipur+Swaroop+Nagar+Extension+Delhi+110042')
       ? url
       : fallback;
@@ -517,7 +517,7 @@
     }
     const dirLink = document.getElementById('mapDirectionsLink');
     if (dirLink) {
-      dirLink.href = mapsUrl(s.googleMapsUrl, directionsFallback);
+      dirLink.href = directionsUrl;
     }
 
     if (cachedProducts.length) {
