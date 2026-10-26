@@ -2,8 +2,6 @@
    ECOLITH ENERGY — script.js
    Vanilla JavaScript · Production Full-Stack Connected Client
    ============================================================ */
-import { G-MX14LZXSX9 } from "@vercel/analytics/next"
-
 
 (function () {
   'use strict';
